@@ -262,7 +262,7 @@ publish/
 *.pubxml
 *.publishproj
 
-*Zip Deploy/*.json
+**/*Zip Deploy/**
 *Zip Deploy.json
 
 # Microsoft Azure Web App publish settings. Comment the next line if you want to

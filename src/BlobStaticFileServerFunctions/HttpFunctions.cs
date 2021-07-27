@@ -4,26 +4,22 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs.Specialized;
+using BlobStaticFileServerFunctions.Options;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace BlobStaticFileServerFunctions
 {
 	public class HttpFunctions
 	{
-		private readonly bool bypassBasicAuth;
-		private readonly string expectedBasicAuthValue;
-
-		public HttpFunctions()
+		private readonly BasicAuthOptions basicAuthOptions;
+		
+		public HttpFunctions(IOptions<BasicAuthOptions> basicAuthOptions)
 		{
-			bool.TryParse(Environment.GetEnvironmentVariable("BASIC_BYPASS"), out bypassBasicAuth);
-
-			if (!bypassBasicAuth)
-			{
-				expectedBasicAuthValue = $"{Environment.GetEnvironmentVariable("BASIC_USERNAME")}:{Environment.GetEnvironmentVariable("BASIC_PASSWORD")}";
-			}
+			this.basicAuthOptions = basicAuthOptions.Value;
 		}
 
 		[FunctionName(nameof(ServeContent))]
@@ -51,22 +47,22 @@ namespace BlobStaticFileServerFunctions
 			return new FileStreamResult(downloadStream.Value.Content, downloadStream.Value.Details.ContentType);
 		}
 
-		private bool ValidateAuthHeader(string authParameter)
+		private bool ValidateAuthHeader(string base64AuthParameter)
 		{
-			if (bypassBasicAuth)
+			if (basicAuthOptions.Bypass)
 			{
 				return true;
 			}
 
-			if (string.IsNullOrWhiteSpace(authParameter))
+			if (string.IsNullOrWhiteSpace(base64AuthParameter))
 			{
 				return false;
 			}
 
-			var bytes = Convert.FromBase64String(authParameter);
-			var actualAuthValue = UTF8Encoding.UTF8.GetString(bytes);
+			var bytes = Convert.FromBase64String(base64AuthParameter);
+			var decodedAuthValue = UTF8Encoding.UTF8.GetString(bytes);
 
-			return expectedBasicAuthValue.Equals(actualAuthValue);
+			return basicAuthOptions.Header.Equals(decodedAuthValue);
 		}
 	}
 }

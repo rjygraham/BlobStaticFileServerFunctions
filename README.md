@@ -19,6 +19,7 @@ To enable Basic Authentication, add the following App Settings to your function:
 ```bash
 BASICAUTH__USERNAME: "Your Username Value"
 BASICAUTH__PASSWORD: "Your Password Value"
+BASICAUTH__BYPASS: "false"
 ```
 
 To disable Basic Authentication and rely on [built-in authentication and authorization](https://docs.microsoft.com/en-us/azure/app-service/overview-authentication-authorization) or disable authentication all together, add the following App Setting to your function:
@@ -29,12 +30,13 @@ BASICAUTH__BYPASS: "true"
 
 ### Azure Function Managed Identity Auth to Storage Account (RECOMMENDED)
 
-To configure the Azure Function to access the Storage Account via Managed Identity be sure to enable the Azure Function Managed Identity and grant the identity Storage Blob Data Reader RBAC to the blob container. Once complete, add the following App Settings to your function:
+To configure the [Azure Function to access the Storage Account via Managed Identity](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference#configure-an-identity-based-connection) be sure to enable the Azure Function Managed Identity and grant the identity Storage Blob Data Reader RBAC to the blob container. Once complete, add the following App Settings to your function:
 
 ```bash
 STATIC__serviceUri: "https://[yourstorageaccount].blob.core.windows.net/"
-STATIC__CONTAINER: "static_content_container_name"
+STATIC_CONTAINER: "static_content_container_name"
 ```
+> NOTE: STATIC__serviceUri contains two underscores and STATIC_CONTAINER contains a single underscore.
 
 ### Azure Function SAS or Account Key Auth to Storage Account
 
@@ -42,7 +44,7 @@ To configure the Azure Function to access the Storage Account via SAS or Account
 
 ```bash
 STATIC: "SAS or Account Key ConnectionString"
-STATIC__CONTAINER: "static_content_container_name"
+STATIC_CONTAINER: "static_content_container_name"
 ```
 ### Localhost Setup
 
@@ -56,8 +58,8 @@ Local setup will require a `local.settings.json` file to be created in the same 
 		"FUNCTIONS_WORKER_RUNTIME": "dotnet",
 		"STATIC": "",
 		"STATIC__serviceUri": "",
-		"STATIC__tenantId": "",
-		"STATIC__container": "",
+		"STATIC__tenantId": "", // May be required for local development if using Managed Identities
+		"STATIC_CONTAINER": "",
 		"BASICAUTH__USERNAME": "",
 		"BASICAUTH__PASSWORD": "",
 		"BASICAUTH__BYPASS": ""
